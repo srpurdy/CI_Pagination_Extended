@@ -1,9 +1,13 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 class MY_Pagination extends CI_Pagination {
 	
-	var $show_first_int	= 2;
-	var $show_last_int = 2;
+	var $show_first_int	= 1; //You can pass you own values using $config['show_first_int'] = '2'; while construction pagination in your controller.
+	var $show_last_int = 1; //You can pass you own values using $config['show_last_int'] = '2'; while construction pagination in your controller.
+	
+	//It's suggested you disable first and last links by setting them to FALSE as they are redundant with this extended library.
 
+	//Modifications begin on line 158
+	
 	function create_links()
 	{
 		// If our item count or per-page total is zero there is no need to continue.
@@ -150,6 +154,9 @@ class MY_Pagination extends CI_Pagination {
 		// Render the pages
 		if ($this->display_pages !== FALSE)
 		{
+			//#############################################################
+			//Modifications to Core Pagination Starts Here
+			//#############################################################
 			if($start >= $this->show_first_int)
 				{
 				for ($loop2 = 1; $loop2 <= $this->show_first_int; $loop2++)
@@ -162,18 +169,31 @@ class MY_Pagination extends CI_Pagination {
 						{
 						$i = ($loop2 * $this->per_page) - $this->per_page;
 						}
-						if($start -1 <= $loop2)
-							{
-							}
-						else
-							{
-							$n = ($i == $base_page) ? '' : $i;
-							$n = ($n == '') ? '' : $this->prefix.$n.$this->suffix;
-							$output .= $this->num_tag_open.'<a '.$this->anchor_class.'href="'.$this->base_url.$n.'">'.$loop2.'</a>'.$this->num_tag_close;
-							}
+						
+					if($start -1 <= $loop2)
+						{
+						//We don't really need this, but I like leaving it open incase.
+						}
+					else
+						{
+						$n = ($i == $base_page) ? '' : $i;
+						$n = ($n == '') ? '' : $this->prefix.$n.$this->suffix;
+						$output .= $this->num_tag_open.'<a '.$this->anchor_class.'href="'.$this->base_url.$n.'">'.$loop2.'</a>'.$this->num_tag_close;
+						}
+					}
+					
+				//This will add a ... inbetween the show_first_int and the middle pages (You may want to change the code below to support your own css rules	
+				if($start -1 <= $loop2)
+					{
+					}
+				else
+					{
+					$output .= $this->num_tag_open.'<a '.$this->anchor_class.'href="#" style="background:transparent !important; border:0px;">...</a>'.$this->num_tag_close;
 					}
 				}
-		
+				
+			//Below is the oringal pagination code before do the $show_last_int
+			//######
 			// Write the digit links
 			for ($loop = $start -1; $loop <= $end; $loop++)
 			{	
@@ -209,11 +229,28 @@ class MY_Pagination extends CI_Pagination {
 					}
 				}
 			}
+			//#######
+			//End of oringal code
+			
+			//Okay Lets do the last set of pages
 			if($end < $num_pages)
 				{
 				$start_loop = $num_pages - $this->show_last_int + 1;
+				$loop3 = $start_loop;
+				
+				//Again we add a ... after the middle pages but before the show_last_int pages. You can also customize this css or use your own css class.
+				if($end >= $loop3)
+					{
+					}
+				else
+					{
+					$output .= $this->num_tag_open.'<a '.$this->anchor_class.'href="#" style="background:transparent !important; border:0px;">...</a>'.$this->num_tag_close;
+					}
+					
+				//Now we will start our loop.
 				for ($loop3 = $start_loop; $loop3 <= $start_loop + $this->show_last_int -1; $loop3++)
 					{
+					
 					if ($this->use_page_numbers)
 						{
 						$i = $loop3;
@@ -222,17 +259,22 @@ class MY_Pagination extends CI_Pagination {
 						{
 						$i = ($loop3 * $this->per_page) - $this->per_page;
 						}
-						if($end >= $loop3)
-							{
-							}
-						else
-							{
-							$n = ($i == $base_page) ? '' : $i;
-							$n = ($n == '') ? '' : $this->prefix.$n.$this->suffix;
-							$output .= $this->num_tag_open.'<a '.$this->anchor_class.'href="'.$this->base_url.$n.'">'.$loop3.'</a>'.$this->num_tag_close;
-							}
+						
+					if($end >= $loop3)
+						{
+						//woah a space! 
+						}
+					else
+						{
+						$n = ($i == $base_page) ? '' : $i;
+						$n = ($n == '') ? '' : $this->prefix.$n.$this->suffix;
+						$output .= $this->num_tag_open.'<a '.$this->anchor_class.'href="'.$this->base_url.$n.'">'.$loop3.'</a>'.$this->num_tag_close;
+						}
 					}
 				}
+		//###########################################################
+		// End of Core Pagination Class Mods
+		//###########################################################
 		}
 
 		// Render the "next" link
